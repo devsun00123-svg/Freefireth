@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FreeFire Style - Leaderboard</title>
+<style>
+  :root{
+    --bg:#0b0b0b;
+    --panel:#1a1510;
+    --accent:#f3c800; /* เหลือง */
+    --muted:#7a6d5f;
+    --text:#e9e6e0;
+    --card:#0f0d0c;
+    --glass: rgba(255,255,255,0.03);
+    --radius:10px;
+  }
+  html,body{height:100%;margin:0;font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial;}
+  body{
+    background: linear-gradient(180deg,#070707 0%, #0f0f0f 100%);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    padding:20px;
+    box-sizing:border-box;
+  }
+
+  /* header */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo .mark{
+    width:42px;height:28px;background:linear-gradient(90deg,#fff,#ddd);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:700;
+  }
+  .menu-btn{background:transparent;border:0;color:var(--text);font-size:20px;}
+
+  /* container */
+  .container{
+    max-width:980px;margin:0 auto;
+  }
+
+  /* leaderboard card */
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius: var(--radius);
+    padding:12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.03);
+    margin-bottom:18px;
+  }
+
+  .card h2{
+    margin:6px 8px 14px 8px;
+    font-size:16px;letter-spacing:1px;color:var(--accent);
+    text-align:center;
+  }
+
+  .controls{
+    display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:0 8px 8px;
+  }
+  .controls select{
+    background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px;
+  }
+
+  table.leaderboard{
+    width:100%;border-collapse:collapse;font-size:14px;
+  }
+  table.leaderboard thead th{
+    text-align:left;padding:10px;background:transparent;color:var(--muted);font-weight:600;border-bottom:1px solid rgba(255,255,255,0.03);
+  }
+  table.leaderboard tbody tr{
+    transition: transform .25s ease, background .25s ease;
+  }
+  table.leaderboard tbody tr:hover{transform:translateX(6px);}
+  table.leaderboard tbody td{
+    padding:12px 10px;border-bottom:1px dashed rgba(255,255,255,0.02);
+    vertical-align:middle;
+  }
+
+  .rank{
+    width:48px;text-align:center;font-weight:700;
+    background:linear-gradient(90deg, rgba(243,200,0,0.12), transparent);
+    border-radius:8px;padding:6px 8px;
+  }
+  .ign{font-weight:700;color:#f4f2ec;}
+  .elims{color:var(--muted);text-align:right;width:95px;}
+
+  /* highlight top 1 */
+  .top1{
+    background: linear-gradient(90deg, rgba(243,200,0,0.12), rgba(243,200,0,0.05));
+    border-left:4px solid var(--accent);
+  }
+
+  /* news carousel */
+  .carousel{
+    position:relative;overflow:hidden;border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.03);
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+  }
+  .slides{
+    display:flex;transition: transform 0.5s cubic-bezier(.2,.9,.2,1);
+    gap:12px;
+  }
+  .slide{
+    min-width:100%;box-sizing:border-box;border-radius:8px;padding:14px;background:var(--card);height:160px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  }
+  .slide h3{color:var(--accent);margin:0 0 6px 0;}
+  .slide p{margin:0;color:var(--muted);padding:0 8px;text-align:center;}
+
+  .carousel .arrow{
+    position:absolute;top:50%;transform:translateY(-50%);border-radius:50%;width:36px;height:36px;background:var(--glass);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03);
+    cursor:pointer;
+  }
+  .carousel .arrow.left{left:8px}
+  .carousel .arrow.right{right:8px}
+
+  /* small indicators */
+  .dots{display:flex;gap:6px;justify-content:center;margin-top:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.06);cursor:pointer}
+  .dot.active{background:var(--accent)}
+
+  /* responsive tweaks */
+  @media (max-width:600px){
+    body{padding:12px;}
+    .card h2{font-size:14px}
+    .slide{height:180px}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <div class="logo">
+      <div class="mark">FF</div>
+      <div>
+        <div style="font-weight:700">FREEFIRE ESPORTS</div>
+        <div style="font-size:12px;color:var(--muted)">Top 10 Players 2025</div>
+      </div>
+    </div>
+    <button class="menu-btn" aria-label="menu">☰</button>
+  </div>
+
+  <!-- Leaderboard card -->
+  <div class="card" id="leaderboardCard">
+    <h2>-- TOP 10 PLAYERS 2025 --</h2>
+    <div class="controls">
+      <label for="metric" style="color:var(--muted);font-size:13px;margin-right:8px">Metric</label>
+      <select id="metric">
+        <option value="elims">ELIMS</option>
+        <option value="points">POINTS</option>
+        <option value="wins">WINS</option>
+      </select>
+    </div>
+
+    <div style="overflow:hidden;border-radius:8px">
+      <table class="leaderboard" id="leaderboardTable" aria-describedby="top10-desc">
+        <thead>
+          <tr>
+            <th style="width:60px">#No</th>
+            <th>IGN</th>
+            <th style="text-align:right">ELIMS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- sample rows; you can fill dynamically from API -->
+          <tr class="top1">
+            <td class="rank">1</td>
+            <td class="ign">ร่องเรือ E-Sports </td>
+            <td class="elims">32</td>
+          </tr>
+          <tr>
+            <td class="rank">2</td>
+            <td class="ign">DARK HORSE</td>
+            <td class="elims">13</td>
+          </tr>
+          <tr>
+            <td class="rank">3</td>
+            <td class="ign">เบียวดินน้ำมัน</td>
+            <td class="elims">13</td>
+          </tr>
+          <tr>
+            <td class="rank">4</td>
+            <td class="ign">GEDEON</td>
+            <td class="elims">7</td>
+          </tr>
+          <tr>
+            <td class="rank">5</td>
+            <td class="ign">แอคแทค อีซี่</td>
+            <td class="elims">7</td>
+          </tr>
+          <tr>
+            <td class="rank">6</td>
+            <td class="ign">เฮียแม็กสั่งลุย</td>
+            <td class="elims">1</td>
+          </tr>
+          <tr>
+            <td class="rank">7</td>
+            <td class="ign"></td>
+            <td class="elims">ไม่มี</td>
+          </tr>
+          <tr>
+            <td class="rank">8</td>
+            <td class="ign"></td>
+            <td class="elims">ไม่มี</td>
+          </tr>
+          <tr>
+            <td class="rank">9</td>
+            <td class="ign"></td>
+            <td class="elims">ไม่มี</td>
+          </tr>
+          <tr>
+            <td class="rank">10</td>
+            <td class="ign"></td>
+            <td class="elims">ไม่มี</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- news / carousel -->
+  <div class="card">
+    <div class="carousel" id="newsCarousel">
+      <div class="slides" id="slides">
+        <div class="slide">
+          <h3>รวม คะแนนห้องซ้อม</h3>
+          <p> ผู้จัด Dev sun  งานแข่ง E-sports</p>
+        </div>
+        <div class="slide">
+          <h3>อัปเดตอันดับใหม่</h3>
+          <p> แข่งรอบจริง เงินรางวัล 1,000 บาท</p>
+        </div>
+        <div class="slide">
+          <h3>กิจกรรมวิทยาลัยเทคโนโลยี</h3>
+          <p>ร่วมกิจกรรม ลุ้นรางวัล เงิน</p>
+        </div>
+      </div>
+
+      <div class="arrow left" id="prev">‹</div>
+      <div class="arrow right" id="next">›</div>
+    </div>
+
+    <div class="dots" id="dots">
+      <div class="dot active" data-index="0"></div>
+      <div class="dot" data-index="1"></div>
+      <div class="dot" data-index="2"></div>
+    </div>
+  </div>
+
+  <div style="height:30px"></div>
+</div>
+
+<script>
+  // Carousel logic
+  (function(){
+    const slides = document.getElementById('slides');
+    const next = document.getElementById('next');
+    const prev = document.getElementById('prev');
+    const dots = [...document.querySelectorAll('.dot')];
+    let idx = 0;
+    function show(i){
+      const count = slides.children.length;
+      idx = ((i%count)+count)%count;
+      slides.style.transform = `translateX(-${idx*100}%)`;
+      dots.forEach(d=>d.classList.remove('active'));
+      dots[idx].classList.add('active');
+    }
+    next.addEventListener('click', ()=> show(idx+1));
+    prev.addEventListener('click', ()=> show(idx-1));
+    dots.forEach(d=> d.addEventListener('click', e=> show(parseInt(e.target.dataset.index))));
+
+    // optional auto-play (comment out if not wanted)
+    let autoplay = setInterval(()=> show(idx+1), 6000);
+    // pause on hover
+    const carousel = document.getElementById('newsCarousel');
+    carousel.addEventListener('mouseenter', ()=> clearInterval(autoplay));
+    carousel.addEventListener('mouseleave', ()=> autoplay = setInterval(()=> show(idx+1), 6000));
+  })();
+
+  // Metric dropdown: example reorder by different data (static demo)
+  document.getElementById('metric').addEventListener('change', function(){
+    const metric = this.value;
+    // In real use: fetch(`/api/top10?metric=${metric}`) and rebuild table body.
+    // Here we just show a small flash to indicate change.
+    const card = document.getElementById('leaderboardCard');
+    card.animate([{transform:'translateY(-6px)'} , {transform:'translateY(0)'}], {duration:300});
+  });
+
+  // Accessibility: make arrows clickable by keyboard
+  document.querySelectorAll('.arrow').forEach(a=>{
+    a.setAttribute('tabindex','0');
+    a.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') e.target.click(); });
+  });
+</script>
+</body>
+</html>
